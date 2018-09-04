@@ -1,0 +1,14 @@
+# DELL
+[[displays]]
+serial = "GH85D64F019S"
+feature = 96
+
+  # primary output for desktop
+  [[displays.actions]]
+  value = 16
+  command = "./virt-usb --detach --domain gamez --devices 1532:001c 0f39:0825"
+
+  # secondary output for gamez
+  [[displays.actions]]
+  value = 15
+  command = "./virt-usb --attach --domain gamez --devices 1532:001c 0f39:0825"
