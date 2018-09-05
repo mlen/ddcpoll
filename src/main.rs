@@ -52,8 +52,8 @@ impl Action {
     }
 }
 
-fn poll(config: &Config, prev_state: &mut HashMap<String, u16>) {
-    for mut display in ddc_hi::Display::enumerate() {
+fn poll(config: &Config, displays: &mut Vec<ddc_hi::Display>, prev_state: &mut HashMap<String, u16>) {
+    for mut display in displays {
         if display.update_capabilities().is_ok() {
             if let Some(d) = config.get(&display.info) {
                 if let Ok(value) = display.handle.get_vcp_feature(d.feature) {
@@ -76,8 +76,9 @@ fn main() {
     let config: Config = toml::from_str(data.as_str()).expect("failed to parse configuration");
 
     let mut prev_state = HashMap::new();
+    let mut displays = ddc_hi::Display::enumerate();
     loop {
-        poll(&config, &mut prev_state);
-        thread::sleep(time::Duration::from_millis(500));
+        poll(&config, &mut displays, &mut prev_state);
+        thread::sleep(time::Duration::from_millis(1000));
     }
 }
