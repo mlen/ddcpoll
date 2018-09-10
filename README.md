@@ -12,8 +12,7 @@ Combined with `virt-usb` tool, which wraps `libvirt` API, USB devices can follow
 
 ## Configuration
 
-Currently ddcpoll expects to find `config.toml` file in its working directory.
-This will be fixed at some point.
+By default ddcpoll look for `config.toml` in its working directory, but `-f` flag can be used to override this.
 
 The configuration format is quite simple TOML file:
 
@@ -33,6 +32,8 @@ feature = 96
   value = 15
   command = "./virt-usb --attach --domain gamez --devices 1532:001c 0f39:0825"
 ```
+
+Currently it uses TOML 0.4, which doesn't support hexadecimal literals.
 
 ## License
 
