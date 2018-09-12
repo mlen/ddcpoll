@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate serde_derive;
-
 #[macro_use]
 extern crate clap;
 
@@ -71,15 +70,15 @@ struct Poller {
 }
 
 impl Poller {
-    fn new(config: Config) -> Poller {
-        Poller { config, displays: ddc_hi::Display::enumerate(), state: HashMap::new() }
+    fn new(config: Config, displays: Vec<ddc_hi::Display>) -> Poller {
+        Poller { config, displays, state: HashMap::new() }
     }
 
     fn poll(&mut self) {
         for mut display in self.displays.iter_mut() {
-            if display.update_capabilities().is_ok() {
-                if let Some(d) = self.config.get(&display.info) {
-                    if let Ok(value) = display.handle.get_vcp_feature(d.feature) {
+            if let Some(d) = self.config.get(&display.info) {
+                match display.handle.get_vcp_feature(d.feature) {
+                    Ok(value) => {
                         let current = value.value();
                         let old = *self.state.entry(d.serial.clone()).or_insert(current);
                         if current != old {
@@ -87,6 +86,7 @@ impl Poller {
                             d.get(current).and_then(|a| a.run().ok());
                         }
                     }
+                    Err(e) => eprintln!("Error while fetching value: {}", e)
                 }
             }
         }
@@ -105,10 +105,9 @@ fn main() {
             .help("Path to the configuration file")).get_matches();
 
     let path = matches.value_of("config").unwrap_or("config.toml");
-    let config = Config::parse(path);
-    let mut poller = Poller::new(config);
+    let mut poller = Poller::new(Config::parse(path), ddc_hi::Display::enumerate());
     loop {
         poller.poll();
-        thread::sleep(time::Duration::from_millis(1000));
+        thread::sleep(time::Duration::from_secs(5));
     }
 }
