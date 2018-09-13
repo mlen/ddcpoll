@@ -19,7 +19,7 @@ struct Config {
 
 impl Config {
     fn get(&self, info: &ddc_hi::DisplayInfo) -> Option<&Display> {
-        self.displays.iter().filter(|d| d.matches(info)).next()
+        self.displays.iter().find(|d| d.matches(info))
     }
 
     fn parse(path: &str) -> Config {
@@ -43,7 +43,7 @@ impl Display {
     }
 
     fn get(&self, value: u16) -> Option<&Action> {
-        self.actions.iter().filter(|a| a.matches(value)).next()
+        self.actions.iter().find(|a| a.matches(value))
     }
 }
 
@@ -75,7 +75,7 @@ impl Poller {
     }
 
     fn poll(&mut self) {
-        for mut display in self.displays.iter_mut() {
+        for mut display in &mut self.displays {
             if let Some(d) = self.config.get(&display.info) {
                 match display.handle.get_vcp_feature(d.feature) {
                     Ok(value) => {
